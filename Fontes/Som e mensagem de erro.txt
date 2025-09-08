@@ -1,0 +1,30 @@
+def main():
+    if not is_admin():
+        relaunch_as_admin()
+        return
+
+    # Verifica se a unidade de rede mapeada está acessível
+    if not os.path.exists(f"{letra_unidade}:\\"):
+        som = obter_caminho_som("error.wav")
+        winsound.PlaySound(som, winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+        resposta = showMessageBox(**notificacao_erro2)  # Alerta de erro
+        return
+
+    desativar_autoplay()
+    map_drive(caminho, unidade)
+
+    if unidade_montada(letra_unidade):
+        desmontar_vhdx()
+
+    if not montar_vhdx():
+        return
+
+    aplicar_icone()
+    aplicar_label()
+
+    som = obter_caminho_som("ready.wav")
+    winsound.PlaySound(som, winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+    resposta = showMessageBox(**notificacao_sucesso)
+    sys.exit()

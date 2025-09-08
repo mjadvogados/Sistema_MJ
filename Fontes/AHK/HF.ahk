@@ -1,0 +1,39 @@
+﻿#SingleInstance Force
+#NoTrayIcon
+
+
+ocultarArquivosOcultos() {
+    chave := "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+    try {
+        RegWrite, REG_DWORD, %chave%, Hidden, 2
+        return "✔ Arquivos ocultos desativados com sucesso."
+    } catch e {
+        return "❌ Erro ao modificar o registro: " . e.Message
+    }
+}
+
+reiniciarExplorer() {
+    try {
+        RunWait, %ComSpec% /c taskkill /f /im explorer.exe, , Hide
+        RunWait, explorer.exe, , Hide
+        return "✅ Windows Explorer reiniciado."
+    } catch e {
+        return "❌ Erro ao reiniciar o Explorer: " . e.Message
+    }
+}
+
+gravarLog(mensagem) {
+    pastaLog := "C:\Windows\Logs"
+    FileCreateDir, %pastaLog%
+    caminhoLog := pastaLog . "\ocultar_arquivos.log"
+    FormatTime, timestamp,, yyyy-MM-dd HH:mm:ss
+    FileAppend, [%timestamp%] %mensagem%`n, %caminhoLog%, UTF-8
+}
+
+; Executa tudo
+msg1 := ocultarArquivosOcultos()
+msg2 := reiniciarExplorer()
+gravarLog(msg1)
+gravarLog(msg2)
+
+ExitApp

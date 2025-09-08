@@ -1,0 +1,110 @@
+Entendi melhor o seu cenário! No caso do código que você forneceu, o processo de mapeamento da unidade de rede **ocorre após a remoção das unidades mapeadas**. Portanto, a verificação de sucesso no mapeamento precisa ser realizada **após** a tentativa de mapeamento, como você mencionou. Só então devemos prosseguir para a montagem do VHDX.
+
+### Justificativa:
+
+* **Mapeamento de unidade de rede**: O código de mapeamento executa o comando `net use`, mas não faz uma verificação explícita de sucesso após o comando ser executado. Isso é importante, porque uma falha no comando pode resultar em uma unidade não mapeada corretamente, mas o código segue sem a devida verificação.
+* **Montagem do VHDX**: O VHDX depende de o mapeamento da unidade de rede ter sido bem-sucedido. Se o mapeamento falhar, a montagem do VHDX deve ser interrompida para evitar erros subsequentes.
+
+### Solução:
+
+Eu sugiro adicionar uma verificação após o comando de mapeamento para garantir que a unidade foi de fato mapeada. Uma maneira simples de fazer isso é tentar acessar a unidade após o comando `net use`, ou verificar o status do mapeamento com o comando `net use`.
+
+A seguir está a versão corrigida do código, incluindo essa verificação:
+
+```python
+import os
+import ctypes
+from FilesUtils import run_hidden, drive_label, hide_drive
+
+def network_path_available(network_path):
+    """
+    Verifica se o caminho da rede está disponível.
+    """
+    try:
+        return os.path.exists(network_path)
+    except Exception:
+        return False
+
+def show_notification(message, title="Aviso"):
+    # Exibe uma notificação com MessageBox padrão do Windows.
+    ctypes.windll.user32.MessageBoxW(0, message, title, 0x30)  # 0x30 = MB_ICONWARNING
+
+def map_drive(network_path, drive_letter, username="administrador", password="mj2145mj", label="Servidor"):
+    """
+    Mapeia e oculta uma unidade de rede no Windows.
+    
+    Parâmetros:
+    - network_path: Caminho da rede
+    - drive_letter: Letra da unidade
+    - username: Usuário para autenticação
+    - password: Senha para autenticação
+    - label: Nome que aparecerá como rótulo da unidade
+    """
+    # Remove conexões anteriores
+    run_hidden('net use * /delete /yes')
+    run_hidden(f'net use {drive_letter}: /delete /yes')
+
+    # Mapeia unidade
+    cmd_map = f'net use {drive_letter}: {network_path} /user:{username} {password} /persistent:yes'
+    run_hidden(cmd_map)
+
+    # Verifica se o mapeamento foi bem-sucedido
+    if not os.path.exists(f"{drive_letter}:\\"):
+        show_notification(f"Falha ao mapear a unidade {drive_letter}:.\nVerifique a conexão com o servidor ou as credenciais.")
+        return False  # Falhou no mapeamento, interrompe o processo
+
+    # Define rótulo
+    drive_label(f"{drive_letter}:\\", label)
+
+    # Oculta unidade
+    hide_drive(drive_letter)
+    
+    return True  # Mapeamento bem-sucedido
+
+```
+
+### Modificações importantes:
+
+1. **Verificação pós-mapeamento:**
+
+   * Após o comando `net use` para mapear a unidade, verificamos se a unidade foi mapeada corretamente com `os.path.exists(f"{drive_letter}:\\")`. Caso contrário, mostramos uma notificação de erro e interrompemos o processo com `return False`.
+
+2. **Notificação de falha no mapeamento:**
+
+   * Se o mapeamento falhar (a unidade não for acessada), uma notificação é exibida alertando o usuário, e o código interrompe a execução dessa parte.
+
+3. **Retorno booleano:**
+
+   * A função `map_drive` agora retorna `True` se o mapeamento for bem-sucedido e `False` caso contrário. Isso permite que você controle o fluxo do código onde a função `map_drive` é chamada, especialmente quando for necessário continuar com o mapeamento do VHDX.
+
+### Fluxo atualizado do código:
+
+* Primeiro, o código tenta **remover qualquer mapeamento anterior**.
+* Em seguida, **tenta mapear a nova unidade** de rede.
+* Se o mapeamento falhar, o processo é interrompido, e uma mensagem de erro é exibida.
+* Se o mapeamento for bem-sucedido, o **rótulo é configurado**, a **unidade é oculta** e o fluxo do programa continua normalmente.
+
+### Como integrar com o resto do código:
+
+Onde você chama a função `map_drive`, você pode agora usar esse retorno para verificar se o mapeamento foi bem-sucedido antes de continuar:
+
+```python
+def main():
+    network_path = r"\\servidor\o$"
+    drive_letter = "O"
+    username = "administrador"
+    password = "mj2145mj"
+    label = "Servidor"
+    
+    # Tenta mapear a unidade de rede
+    if not map_drive(network_path, drive_letter, username, password, label):
+        show_notification("O processo de mapeamento falhou. Verifique a rede ou as credenciais.", "Erro")
+        return  # Interrompe o processo se o mapeamento falhar
+
+    # Continuar com a montagem do VHDX ou outras operações
+    # Aqui, você pode adicionar o código para montar o VHDX, se a unidade foi mapeada com sucesso.
+```
+
+### Conclusão:
+
+Esse ajuste garante que você só prosseguirá com o processo de montagem do VHDX **se a unidade de rede foi mapeada corretamente**. Isso evita possíveis erros relacionados ao acesso à unidade de rede dentro do VHDX e proporciona um controle de fluxo mais robusto no seu código.

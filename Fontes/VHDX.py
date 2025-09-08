@@ -21,7 +21,7 @@ vhd_file = r"C:\Network\Network.vhdx"
 icone = r"C:\Network\MJ.ico"
 
 letra_unidade = server_drive
-rotulo = label
+rotulo = "Servidor-MJ"
 caminho = read_server()
 unidade = network_drive
 #caminho = r"\\servidor\o$"

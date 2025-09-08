@@ -1,0 +1,4 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run]
+"VHDXRun"="cmd.exe /c start \"\" /high \"C:\\Windows\\MJ\\VHDXRun.exe\""
