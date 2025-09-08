@@ -13,6 +13,9 @@ from FilesUtils import set_attrib, run_hidden, clear_target, openX, check_disk
 from SaveServer import load_config, save_config, save_server, read_server
 from Parameters import load_parameters
 from CreateBat import create_bat
+from Version import __version__
+app_version = __version__
+
 #from SelectServer2 import SetServer
 
 def load_last_server():
@@ -197,7 +200,7 @@ class FolderSelectorWindow(QMainWindow):
         self.status = QStatusBar(self)
         self.setStatusBar(self.status)
         self.status.setStyleSheet("QStatusBar { background-color: #006400; color: white; font-weight: bold; }")
-        self.status.showMessage("© 2025 - Fabiano Fonseca")
+        self.status.showMessage(f"© 2025 - Fabiano Fonseca | V. {app_version}")
 
         self.selecionar_pastas()
 
@@ -236,7 +239,7 @@ class FolderSelectorWindow(QMainWindow):
             cb.show()
             self.checkboxes.append(cb)
 
-        self.status.showMessage(f"{len(pastas)} pastas carregadas da unidade O:.")
+        #self.status.showMessage(f"{len(pastas)} pastas carregadas da unidade O:.")
 
         self.setTabOrder(self.combo_servidor, self.btn_aplicar_servidor)
         for i in range(len(self.checkboxes) - 1):
@@ -251,7 +254,7 @@ class FolderSelectorWindow(QMainWindow):
         clear_target(destino_simbolico, destino_juncoes)
 
         if not selecionadas:
-            self.status.showMessage("Nenhuma pasta selecionada. Junções removidas.")
+            #self.status.showMessage("Nenhuma pasta selecionada. Junções removidas.")
             return
 
         self.som_thread = threading.Thread(target=self.tocar_som, daemon=True)
@@ -280,7 +283,7 @@ class FolderSelectorWindow(QMainWindow):
         self.parar_som()
         save_config(os.getlogin(), [cb.text() for cb in self.checkboxes if cb.isChecked()])
         openX(self)
-        self.status.showMessage("Junções aplicadas com sucesso e unidade X: aberta!")
+        #self.status.showMessage("Junções aplicadas com sucesso e unidade X: aberta!")
 
         QTimer.singleShot(300, self.close)
         QTimer.singleShot(600, QCoreApplication.quit)
@@ -298,7 +301,7 @@ class FolderSelectorWindow(QMainWindow):
         caminho = servidores.get(servidor, "")
 
         if not caminho:
-            self.status.showMessage("Servidor inválido.")
+            #self.status.showMessage("Servidor inválido.")
             return
 
         save_server(caminho)
@@ -312,13 +315,13 @@ class FolderSelectorWindow(QMainWindow):
             if os.path.exists("O:"):
                 #global origem  # <-- necessário para alterar a variável global
                 #origem = "O:\\"  # <-- agora a variável aponta para a unidade mapeada
-                self.status.showMessage(f"Servidor '{servidor}' aplicado com sucesso.")
+                #self.status.showMessage(f"Servidor '{servidor}' aplicado com sucesso.")
                 self.selecionar_pastas()
                 return
             time.sleep(0.5)
 
         # Se depois das tentativas ainda não estiver acessível
-        self.status.showMessage("Erro: unidade de rede não acessível.")
+        #self.status.showMessage("Erro: unidade de rede não acessível.")
 
 
 

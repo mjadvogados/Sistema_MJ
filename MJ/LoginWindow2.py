@@ -1,11 +1,12 @@
+# LoginWindow.py
 import sys
-import os
-import tempfile
-from PyQt6.QtWidgets import (
-    QDialog, QLabel, QLineEdit, QPushButton, QFrame, QMessageBox, QApplication, QComboBox
-)
+from PyQt6.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QFrame, QMessageBox, QApplication
 from PyQt6.QtCore import Qt, QRect, QCoreApplication
 from PyQt6.QtGui import QFont
+
+from Version import __version__
+app_version = --version--
+
 
 
 # ⚠️ Usuários válidos. Substitua por uma lógica segura em produção!
@@ -17,11 +18,10 @@ VALID_CREDENTIALS = {
     "MJ": "mj1213mj"
 }
 
-
 class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Login - MJ Advogados")
+        self.setWindowTitle(f"Login - MJ Advogados - V. {app_version}")
         self.setFixedSize(400, 250)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         self.setStyleSheet("""
@@ -53,12 +53,11 @@ class LoginWindow(QDialog):
         self.label_user.setStyleSheet("color: black;")
         self.label_user.setGeometry(20, 30, 200, 20)
 
-        # ComboBox Usuário (substituindo QLineEdit)
-        self.combo_user = QComboBox(self.frame)
-        self.combo_user.setFont(input_font)
-        self.combo_user.setStyleSheet("background-color: white; color: #00008B;")
-        self.combo_user.setGeometry(20, 55, 250, 25)
-        self.combo_user.addItems(VALID_CREDENTIALS.keys())
+        # Campo Usuário
+        self.input_user = QLineEdit(self.frame)
+        self.input_user.setFont(input_font)
+        self.input_user.setStyleSheet("background-color: white; color: #00008B;")  # azul escuro
+        self.input_user.setGeometry(20, 55, 250, 25)
 
         # Label Senha
         self.label_pass = QLabel("Senha:", self.frame)
@@ -72,6 +71,7 @@ class LoginWindow(QDialog):
         self.input_pass.setStyleSheet("background-color: white; color: #00008B;")
         self.input_pass.setEchoMode(QLineEdit.EchoMode.Password)
         self.input_pass.setGeometry(20, 115, 250, 25)
+
 
         # Botão Login
         self.login_button = QPushButton("&Login", self.frame)
@@ -92,7 +92,6 @@ class LoginWindow(QDialog):
         self.login_button.setGeometry(90, 170, 100, 35)
         self.login_button.clicked.connect(self.validar_login)
         self.input_pass.returnPressed.connect(self.login_button.click)
-
         # Botão Cancelar
         self.cancel_button = QPushButton("&Cancelar", self.frame)
         self.cancel_button.setFont(QFont("Arial", 10, QFont.Weight.Bold))
@@ -120,21 +119,14 @@ class LoginWindow(QDialog):
         self.move(x, y)
 
     def validar_login(self):
-        usuario = self.combo_user.currentText()
+        usuario = self.input_user.text()
         senha = self.input_pass.text()
 
         if VALID_CREDENTIALS.get(usuario) == senha:
-            # Salvar o nome do usuário em arquivo userlog.dat na pasta temp
-            temp_path = os.path.join(tempfile.gettempdir(), "userlog.dat")
-            try:
-                with open(temp_path, 'w', encoding='utf-8') as f:
-                    f.write(usuario)
-            except Exception as e:
-                QMessageBox.warning(self, "Erro", f"Erro ao salvar usuário: {str(e)}")
-                return
             self.accept()
         else:
             QMessageBox.warning(self, "Erro", "Usuário ou senha inválidos.")
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginWindow()
