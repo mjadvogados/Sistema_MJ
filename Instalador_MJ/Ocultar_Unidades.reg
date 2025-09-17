@@ -1,0 +1,9 @@
+Windows Registry Editor Version 5.00
+
+; Ocultar unidades A:, B:, O: e P: para o usuário atual
+;[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer]
+;"NoDrives"=dword:0000c003
+
+; Ocultar unidades A:, B:, O: e P: para todos os usuários
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer]
+"NoDrives"=dword:0000c003
